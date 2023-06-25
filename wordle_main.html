@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faux Wordle</title>
+
+    <link rel="stylesheet" href="wordle_main.css">
+
+    <script   src="https://code.jquery.com/jquery-3.1.1.min.js"
+	integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+	crossorigin="anonymous"></script>
+
+</head>
+<body>
+
+    <h1>Steve's Wordle</h1>
+
+    <div class = "line" id = "line1">
+        <p class = "box"></p>
+        <p class = "box"></p>
+        <p class = "box"></p>
+        <p class = "box"></p>
+        <p class = "box"></p>
+    </div>
+    <div class = "line" id = "line2">
+        <p class = "box"></p>
+        <p class = "box"></p>
+        <p class = "box"></p>
+        <p class = "box"></p>
+        <p class = "box"></p>
+    </div>
+    <div class = "line" id = "line3">
+        <p class = "box"></p>
+        <p class = "box"></p>
+        <p class = "box"></p>
+        <p class = "box"></p>
+        <p class = "box"></p>
+    </div>
+    <div class = "line" id = "line4">
+        <p class = "box"></p>
+        <p class = "box"></p>
+        <p class = "box"></p>
+        <p class = "box"></p>
+        <p class = "box"></p>
+    </div>
+    <div class = "line" id = "line5">
+        <p class = "box"></p>
+        <p class = "box"></p>
+        <p class = "box"></p>
+        <p class = "box"></p>
+        <p class = "box"></p>
+    </div>
+    <div class = "line" id = "line6">
+        <p class = "box"></p>
+        <p class = "box"></p>
+        <p class = "box"></p>
+        <p class = "box"></p>
+        <p class = "box"></p>
+    </div>
+    <br>
+
+    <label for="user_guess">Input your guess please:</label>
+    <input name="user_guess" type="text" id="user_guess"/>
+    <br><br>
+
+    <input type="button" id="submit" value="Submit Guess">
+    <input type="button" id="newgame" value="New Game">
+
+    <script>
+
+        answer = "SHYLY"
+        console.log("answer: " + answer)
+
+        // answer = ["COVET", "TASTE", "CRANE",
+        //  "FROST", "KAZOO", "SHYLY"]
+
+         guess_count = 0
+
+        $("#submit").click(function() {
+            user_guess = $("#user_guess").val();
+
+            if (user_guess.length != 5) {      //catches anything that isn't 5 characters
+                alert("guess has to be a 5 letter word");
+                return
+            }
+
+            if (/^[a-zA-Z]+$/.test(user_guess) == false) { //catches anything that isn't a letter
+                alert("Use letters please.");
+                return
+            }
+
+            ug = user_guess.toUpperCase();
+            guess_count += 1;
+            console.log("Count: " + guess_count + " Guess: " + ug);
+
+
+
+            var ans = answer.split("");
+            var gs = ug.split("")
+
+            each_i = 0;
+            $("#line" + guess_count + " > p").each(function(){
+                $(this).html(ug[each_i]);
+
+                if (ug[each_i] == answer[each_i]) {
+                    $(this).css("background-color", "#019a01");
+
+                    ans[each_i] = " ";
+                    gs[each_i] = ".";
+
+                    // console.log("Green: " + ug[each_i])
+                    // console.log("gs:" +gs + " ans:" + ans)
+                }
+
+                each_i += 1;
+
+            })
+
+            setTimeout(()=> {
+                if (ug == answer) {
+                        alert("WOOOO Congrats!!!");
+                        $("#newgame").css("display", "inline")
+                        return
+                    }
+                }, 500);
+
+            new_i = 0
+            $("#line" + guess_count + " > p").each(function(){
+
+                for (let i = 0; i < ans.length; i++) {
+                        if (gs[new_i] == ans[i]) {
+                            $(this).css("background-color", "#ffc425");
+                            ans[i] = "";
+                            console.log("Yellow: " + ug[new_i] +"  " + ans)
+                        }
+                }
+
+                new_i += 1;
+            });
+
+
+
+
+        });
+
+        $("#newgame").click(function() {
+            $(this).css("display", "none");
+            guess_count = 0;
+            $("p").css("background-color", "transparent");
+            $("p").html("");
+        });
+
+    </script>
+
+</body>
+</html>
