@@ -1,0 +1,20 @@
+.box {
+    border: 2px solid black;
+    margin: 2px;
+    padding: 20px;
+    height: 30px;
+    width: 30px;
+    font-size: 30px;
+    text-align: center;
+}
+
+.line {
+    display: flex;
+    flex-direction: row;
+}
+
+#newgame {
+   padding: 10px 10px;
+   display: none;
+   font-size: 30px;
+}
