@@ -60,12 +60,50 @@
     </div>
     <br>
 
-    <label for="user_guess">Input your guess please:</label>
-    <input name="user_guess" type="text" id="user_guess" autofocus onfocus="this.select()"/>
-    <br><br>
+    <form>
+        <label for="user_guess">Input your guess please:</label>
+        <input name="user_guess" type="text" id="user_guess" autofocus onfocus="this.select()"/>
+        <br><br>
 
-    <input type="button" id="submit" value="Submit Guess">
-    <input type="button" id="newgame" value="New Game">
+        <input type="button" id="submit" value="Submit Guess">
+        <input type="button" id="newgame" value="New Game">
+    </form>
+
+    <br>
+
+    <div class = "letter_line" id = "l_line1">
+        <p class = "letter"></p>
+        <p class = "letter"></p>
+        <p class = "letter"></p>
+        <p class = "letter"></p>
+        <p class = "letter"></p>
+        <p class = "letter"></p>
+        <p class = "letter"></p>
+        <p class = "letter"></p>
+        <p class = "letter"></p>
+
+    </div>
+    <div class = "letter_line" id = "l_line2">
+        <p class = "letter"></p>
+        <p class = "letter"></p>
+        <p class = "letter"></p>
+        <p class = "letter"></p>
+        <p class = "letter"></p>
+        <p class = "letter"></p>
+        <p class = "letter"></p>
+        <p class = "letter"></p>
+        <p class = "letter"></p>
+    </div>
+    <div class = "letter_line" id = "l_line3">
+        <p class = "letter"></p>
+        <p class = "letter"></p>
+        <p class = "letter"></p>
+        <p class = "letter"></p>
+        <p class = "letter"></p>
+        <p class = "letter"></p>
+        <p class = "letter"></p>
+        <p class = "letter"></p>
+    </div>
 
     <script>
 
@@ -77,6 +115,7 @@
         var answer;
         var ans;
         var gs;
+        const letter_array = [];
 
         const answer_list = ["COVET", "TASTE", "CRANE",
             "FROST", "KAZOO", "SHYLY"]
@@ -106,6 +145,14 @@
             ans = answer.split("");   //Split answer into array to index easier
             gs = ug.split("");        //Split guess into array
 
+            gs.forEach(element => {
+                letter_array.forEach(let_obj =>{
+                    if (element == let_obj.letter) {
+                        let_obj.used()
+                    }
+                } )
+            });
+
             each_i = 0;
             $("#line" + guess_count + " > p").each(function(){  //iterate the line of <p> for a given guess
                 $(this).html(ug[each_i]);
@@ -116,8 +163,8 @@
                     ans[each_i] = ",";  //check for any green tiles and remove them from further checks
                     gs[each_i] = ".";
 
-                    console.log("Green: " + ug[each_i])
-                    console.log("gs:" +gs + " ans:" + ans)
+                    // console.log("Green: " + ug[each_i])
+                    // console.log("gs:" +gs + " ans:" + ans)
                 }
 
                 each_i += 1;
@@ -155,7 +202,7 @@
                 }, 300);
 
             setTimeout(()=> {       //alert loser
-            if (guess_count > 5) {
+            if (guess_count > 5 && ug != answer) {
                     alert("Please Try Again");
                     $("#newgame").css("display", "inline")
                     $("#submit").css("display", "none")
@@ -171,19 +218,43 @@
                             $(this).css("background-color", "#ffc425");
                             ans[i] = ",";
                             gs[new_i] = ".";
-                            console.log("Yellow: " + ug[new_i] +"  " + ans)
+                            // console.log("Yellow: " + ug[new_i] +"  " + ans)
                         }
                 }
 
                 new_i += 1;
             });
+
         };
+
+        function Letter(box, letter)
+            {
+                this.box = box;
+                this.letter = letter;
+                this.used = function() {
+                    $(box).css("background-color", "#2C2C2C");
+                }
+            }
 
         function play_game() {
             answer = answer_list[Math.floor(Math.random()*answer_list.length)]
             console.log("answer: " + answer)
             guess_count = 0
-        }
+
+            const alpha = Array.from(Array(26)).map((e, i) => i + 65); //https://plainenglish.io/blog/create-an-array-of-alphabet-characters-in-javascript-with-this-simple-trick
+            const alphabet = alpha.map((x) => String.fromCharCode(x));
+
+            iter = 0;
+            $(".letter_line > p").each(function(){
+                $(this).html(alphabet[iter]);
+
+                let_obj = new Letter(this, alphabet[iter]);
+                letter_array.push(let_obj);
+
+                iter += 1
+
+            });
+        };
 
         $("#newgame").click(function() {
             $(this).css("display", "none");
