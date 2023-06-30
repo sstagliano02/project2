@@ -113,15 +113,17 @@
         var ug;
         var each_i;
         var new_i;
-        var answer;
+        var answer = "";
         var ans;
         var gs;
+        var ans_pass_fail;
+        var pass_fail;
         const letter_array = [];
 
         // const answer_list = ["COVET", "TASTE", "CRANE",
         //     "FROST", "KAZOO", "SHYLY"]
 
-        document.getElementById("submit").addEventListener("click", event_handler)
+        document.getElementById("submit").addEventListener("click", event_handler)  //adds event listener to Submit button click
 
         play_game();  //kicks off the game when first loading webpage
 
@@ -131,32 +133,14 @@
             document.getElementById("user_guess").focus();  //keeps the users cursor in the input box
 
             //checkWord and GetDict check if the word returns a response from a dictionary API. Ends guess if not, otherwise continues.
-            var pass_fail;
 
-            function checkWord(some) {  
-                pass_fail = some;
-            };
 
-            function getDict(myCallback, user_guess) {
-                let req = new XMLHttpRequest();
-                req.open('GET', "https://api.dictionaryapi.dev/api/v2/entries/en/"+user_guess, false);
-                req.onload = function() {
-                    if (req.status == 200) {
-                        myCallback("PASSED");
-                    } else {
-                        myCallback("FAILED");
-                    }
-                }
-                req.send();
-            }
+            getDict(checkWord,user_guess)  //checks that user guess is a real world
 
-            getDict(checkWord,user_guess)
-
-            if (pass_fail == "FAILED") {
+            if (pass_fail == "FAILED") {   //if user guess not real end the event function
                 alert("That's not a word");
                 return
             }
-            //end of word checking agains dictionary
 
             if (user_guess.length != 5) {      //catches anything that isn't 5 characters
                 alert("guess has to be a 5 letter word");
@@ -168,29 +152,29 @@
                 return
             }
 
-            ug = user_guess.toUpperCase();
+            ug = user_guess.toUpperCase();  // ensures user guess matches upper case format of answer
             guess_count += 1;
             console.log(" Guess Count: " + guess_count + " -- Guess: " + ug);
 
             ans = answer.split("");   //Split answer into array to index easier
-            gs = ug.split("");        //Split guess into array
+            gs = ug.split("");        //Split guess into array to index easier
 
             gs.forEach(element => {           //tracked used letters
                 letter_array.forEach(let_obj =>{
                     if (element == let_obj.letter) {
-                        let_obj.used()  //changed css with used() method of custom object
+                        let_obj.used()  //changed css with used() method of custom letter board object
                     }
                 } )
             });
 
             each_i = 0;
-            $("#line" + guess_count + " > p").each(function(){  //iterate the line of <p> for a given guess and update with the guess
+            $("#line" + guess_count + " > p").each(function(){  //iterate each <p> for a given guess line and update with the guess letter
                 $(this).html(ug[each_i]);
 
                 if (ug[each_i] == answer[each_i]) {
                     $(this).css("background-color", "#019a01");
 
-                    ans[each_i] = ",";  //check for any green tiles and remove them from further checks
+                    ans[each_i] = ",";  //check for any green tiles and remove them from further checks. The , and . are arbitrary.
                     gs[each_i] = ".";
                 }
 
@@ -263,28 +247,60 @@
                 }
             }
 
+        function checkWord(some) {  //for use with getDict to validate if the guess word is actually a word per the validation dictionary
+            pass_fail = some;
+        };
+
+        function check_answer(some) {  //for use with getDict to validate if the generated random is actually a word per the validation dictionary
+            ans_pass_fail = some;
+        };
+
+        function getDict(myCallback, user_guess) {
+            let req = new XMLHttpRequest();
+            req.open('GET', "https://api.dictionaryapi.dev/api/v2/entries/en/"+user_guess, false);
+            req.onload = function() {
+                if (req.status == 200) {
+                    myCallback("PASSED");
+                } else {
+                    myCallback("FAILED");
+                }
+            }
+            req.send();
+        }
+
+
+        function getWord(some) {  //function to call an API and get a random 5 letter word. used with getFile.
+            answer = JSON.parse(some)[0].toUpperCase();
+        };
+
+        function getFile(myCallback) {
+            let req = new XMLHttpRequest();
+            req.open('GET', "https://random-word-api.herokuapp.com/word?length=5", false);
+            req.onload = function() {
+                if (req.status == 200) {
+                    myCallback(req.responseText);
+                } else {
+                    myCallback("Error: " + req.status);
+                }
+            }
+            req.send();
+        }
+
         function play_game() {   //function that initates the game
 
             // answer = answer_list[Math.floor(Math.random()*answer_list.length)]  (commented out--original method to get answer)
 
-            function getWord(some) {  //function to call an API and get a random 5 letter word
-                answer = JSON.parse(some)[0].toUpperCase();
-            };
+            while (answer == ""){  //checks that the randomly generated answer is a real word (different API dictionaries used to generate word and check word)
 
-            function getFile(myCallback) {
-                let req = new XMLHttpRequest();
-                req.open('GET', "https://random-word-api.herokuapp.com/word?length=5", false);
-                req.onload = function() {
-                    if (req.status == 200) {
-                        myCallback(req.responseText);
-                    } else {
-                        myCallback("Error: " + req.status);
-                    }
+                getFile(getWord)
+
+                getDict(check_answer,answer)
+
+                if (ans_pass_fail == "FAILED") {
+                    answer = "";
                 }
-                req.send();
             }
 
-            getFile(getWord) 
             console.log("Answer for this round: " + answer)
 
             guess_count = 0;  //tracks guesses for each round
@@ -293,7 +309,7 @@
             const alphabet = alpha.map((x) => String.fromCharCode(x));
 
             iter = 0;
-            $(".letter_line > p").each(function(){ //iterate over each <p> in the guess display lines
+            $(".letter_line > p").each(function(){ //iterate over each <p> in the guess display lines and add a letter from the alphabet
                 $(this).html(alphabet[iter]);
 
                 let_obj = new Letter(this, alphabet[iter]);
