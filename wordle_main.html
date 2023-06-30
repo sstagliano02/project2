@@ -60,7 +60,7 @@
     </div>
     <br>
 
-    <form>
+    <form onSubmit="return false">   <!-- return falls prevents the page from reloading when hitting "Enter" key-->
         <label for="user_guess">Input your guess please:</label>
         <input name="user_guess" type="text" id="user_guess" autofocus onfocus="this.select()"/>
         <br><br>
@@ -106,8 +106,9 @@
     </div>
 
     <script>
+    $(document).ready(function(){
 
-        var guess_count;
+        var guess_count;  //instantiate objects that will take new values as functions run
         var user_guess;
         var ug;
         var each_i;
@@ -117,16 +118,45 @@
         var gs;
         const letter_array = [];
 
-        const answer_list = ["COVET", "TASTE", "CRANE",
-            "FROST", "KAZOO", "SHYLY"]
+        // const answer_list = ["COVET", "TASTE", "CRANE",
+        //     "FROST", "KAZOO", "SHYLY"]
 
         document.getElementById("submit").addEventListener("click", event_handler)
 
-        play_game();
+        play_game();  //kicks off the game when first loading webpage
 
         function event_handler (){
-            user_guess = $("#user_guess").val();
-            document.getElementById("user_guess").focus();
+
+            user_guess = $("#user_guess").val();       //grab user guess from input box
+            document.getElementById("user_guess").focus();  //keeps the users cursor in the input box
+
+            //checkWord and GetDict check if the word returns a response from a dictionary API. Ends guess if not, otherwise continues.
+            var pass_fail;
+
+            function checkWord(some) {  
+                pass_fail = some;
+            };
+
+            function getDict(myCallback, user_guess) {
+                let req = new XMLHttpRequest();
+                req.open('GET', "https://api.dictionaryapi.dev/api/v2/entries/en/"+user_guess, false);
+                req.onload = function() {
+                    if (req.status == 200) {
+                        myCallback("PASSED");
+                    } else {
+                        myCallback("FAILED");
+                    }
+                }
+                req.send();
+            }
+
+            getDict(checkWord,user_guess)
+
+            if (pass_fail == "FAILED") {
+                alert("That's not a word");
+                return
+            }
+            //end of word checking agains dictionary
 
             if (user_guess.length != 5) {      //catches anything that isn't 5 characters
                 alert("guess has to be a 5 letter word");
@@ -145,16 +175,16 @@
             ans = answer.split("");   //Split answer into array to index easier
             gs = ug.split("");        //Split guess into array
 
-            gs.forEach(element => {
+            gs.forEach(element => {           //tracked used letters
                 letter_array.forEach(let_obj =>{
                     if (element == let_obj.letter) {
-                        let_obj.used()
+                        let_obj.used()  //changed css with used() method of custom object
                     }
                 } )
             });
 
             each_i = 0;
-            $("#line" + guess_count + " > p").each(function(){  //iterate the line of <p> for a given guess
+            $("#line" + guess_count + " > p").each(function(){  //iterate the line of <p> for a given guess and update with the guess
                 $(this).html(ug[each_i]);
 
                 if (ug[each_i] == answer[each_i]) {
@@ -162,9 +192,6 @@
 
                     ans[each_i] = ",";  //check for any green tiles and remove them from further checks
                     gs[each_i] = ".";
-
-                    // console.log("Green: " + ug[each_i])
-                    // console.log("gs:" +gs + " ans:" + ans)
                 }
 
                 each_i += 1;
@@ -201,7 +228,7 @@
                     }
                 }, 300);
 
-            setTimeout(()=> {       //alert loser
+            setTimeout(()=> {       //alert loser. On timeout so the tiles can colorize.
             if (guess_count > 5 && ug != answer) {
                     alert("Please Try Again");
                     $("#newgame").css("display", "inline")
@@ -227,7 +254,7 @@
 
         };
 
-        function Letter(box, letter)
+        function Letter(box, letter) //Create object for the letter boxes (the used tile display)
             {
                 this.box = box;
                 this.letter = letter;
@@ -236,16 +263,37 @@
                 }
             }
 
-        function play_game() {
-            answer = answer_list[Math.floor(Math.random()*answer_list.length)]
-            console.log("answer: " + answer)
-            guess_count = 0
+        function play_game() {   //function that initates the game
+
+            // answer = answer_list[Math.floor(Math.random()*answer_list.length)]  (commented out--original method to get answer)
+
+            function getWord(some) {  //function to call an API and get a random 5 letter word
+                answer = JSON.parse(some)[0].toUpperCase();
+            };
+
+            function getFile(myCallback) {
+                let req = new XMLHttpRequest();
+                req.open('GET', "https://random-word-api.herokuapp.com/word?length=5", false);
+                req.onload = function() {
+                    if (req.status == 200) {
+                        myCallback(req.responseText);
+                    } else {
+                        myCallback("Error: " + req.status);
+                    }
+                }
+                req.send();
+            }
+
+            getFile(getWord) 
+            console.log("Answer for this round: " + answer)
+
+            guess_count = 0;  //tracks guesses for each round
 
             const alpha = Array.from(Array(26)).map((e, i) => i + 65); //https://plainenglish.io/blog/create-an-array-of-alphabet-characters-in-javascript-with-this-simple-trick
             const alphabet = alpha.map((x) => String.fromCharCode(x));
 
             iter = 0;
-            $(".letter_line > p").each(function(){
+            $(".letter_line > p").each(function(){ //iterate over each <p> in the guess display lines
                 $(this).html(alphabet[iter]);
 
                 let_obj = new Letter(this, alphabet[iter]);
@@ -256,7 +304,7 @@
             });
         };
 
-        $("#newgame").click(function() {
+        $("#newgame").click(function() {      //function to reset everything and start new play_game
             $(this).css("display", "none");
             guess_count = 0;
             user_guess = "";
@@ -273,7 +321,7 @@
             play_game();
         });
 
-
+    });
     </script>
 
 </body>
